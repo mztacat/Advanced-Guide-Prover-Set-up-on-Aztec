@@ -21,12 +21,13 @@ This guide provides a step-by-step, production-grade walkthrough for deploying a
 > 
 > - **Do NOT use the same private key** for your Prover as you do for a Sequencer Node as this will cause **nonce conflicts** and failed transactions.
 > - **Do NOT run a Sequencer Node and a Prover on the same server** — they use overlapping ports, which will result in **port binding conflicts**.
+> - To be eligible for the **Prover Role**, you must complete at least **750 epochs**
 
 ------
 ## 1. Preparation and Requirements 
 - [ ] Read the [Aztec Prover Docs](https://docs.aztec.network/the_aztec_network/guides/run_nodes/how_to_run_prover)
 - [ ] You'll need **two servers**: (these are my specifications for optimal performance)
-  - **Broker Box** : 48–64 cores, 256 GB RAM, NVMe
+  - **Broker Box** : 48 cores, 256 GB RAM, NVMe
   - **Main Rig (Agents)** : 64 - 192 cores, 256 – 768 GB RAM, NVMe **( I used a 2x EPYC 96 Cores = 192 cores in total)**
 - [ ] Take note of **public IP** for Broker NODE
 - [ ] Open required ports on Broker Box:
@@ -132,6 +133,208 @@ aztec --version
 ```
 aztec-up latest
 ```
+
+## 3️⃣ Create Prover Directory & Configure Firewall
+---
+### Create the Prover Directory
+This will hold your Docker Compose files, `.env`, and data volumes:
+```
+mkdir -p ~/broker
+cd ~/broker
+```
+
+### Allow ports in UFW  and enable 
+Open the necessary TCP and UDP ports for the broker, prover node, and SSH access:
+
+```
+sudo ufw allow 22/tcp     
+sudo ufw allow 8080/tcp   
+sudo ufw allow 8081/tcp     
+sudo ufw allow 40400/tcp   
+sudo ufw allow 40400/udp 
+```
+
+```
+sudo ufw enable
+```
+
+### Create a .env file 
+⚠️  **Important: Do NOT reuse the same private key as your Sequencer Node — this will cause nonce conflicts.**
+
+```
+nano .env
+```
+
+### Paste content in .env 
+```
+P2P_IP=
+ETHEREUM_HOSTS=
+L1_CONSENSUS_HOST_URLS=
+PROVER_PUBLISHER_PRIVATE_KEY=
+PROVER_ID=
+```
+`CTRL` + `X` select `Y` and ENTER
+
+### Create a `docker-compose.yml` file 
+### Creat a docker file with 
+```
+nano docker-compose.yml
+```
+
+### Paste content and save
+```
+name: aztec-prover
+services:
+  broker:
+    image: aztecprotocol/aztec:latest
+    command:
+      - node
+      - --no-warnings
+      - /usr/src/yarn-project/aztec/dest/bin/index.js
+      - start
+      - --prover-broker
+      - --network
+      - alpha-testnet
+    environment:
+      DATA_DIRECTORY: /data-broker
+      LOG_LEVEL: info
+      ETHEREUM_HOSTS: ${ETHEREUM_HOSTS}
+      P2P_IP: ${P2P_IP}
+    volumes:
+      - ./data-broker:/data-broker
+    ports:
+      - "8081:8080"   # Expose broker's internal 8080 as external 8081
+    entrypoint: >
+      sh -c 'node --no-warnings /usr/src/yarn-project/aztec/dest/bin/index.js start --network alpha-testnet --prover-broker'
+
+  prover-node:
+    image: aztecprotocol/aztec:latest
+    depends_on:
+      - broker
+    environment:
+      P2P_ENABLED: "true"
+      DATA_DIRECTORY: /data-prover
+      P2P_IP: ${P2P_IP}
+      DATA_STORE_MAP_SIZE_KB: "134217728"
+      ETHEREUM_HOSTS: ${ETHEREUM_HOSTS}
+      L1_CONSENSUS_HOST_URLS: ${L1_CONSENSUS_HOST_URLS}
+      LOG_LEVEL: info
+      PROVER_BROKER_HOST: http://broker:8080  # within docker network
+      PROVER_PUBLISHER_PRIVATE_KEY: ${PROVER_PUBLISHER_PRIVATE_KEY}
+    volumes:
+      - ./data-prover:/data-prover
+    ports:
+      - "40400:40400"
+      - "40400:40400/udp"
+    entrypoint: >
+      sh -c 'node --no-warnings /usr/src/yarn-project/aztec/dest/bin/index.js start --network alpha-testnet --archiver --prover-node'
+```
+
+
+
+
+## Step 2 — Set Up the Agents (Main Prover Rig) 
+This server will run **Prover Agents** only, connecting to the Broker to receive proving jobs. **[Remember,this is the NODE with 256GB+ RAMS].**
+
+---
+
+### 1️⃣ Install Essentials
+Update and install required packages:
+
+```
+sudo apt update && sudo apt upgrade -y && \
+sudo apt install -y \
+    build-essential \
+    micro \
+    libssl-dev \
+    tar \
+    unzip \
+    wget \
+    curl \
+    git \
+    jq \
+    htop \
+    ufw \
+    net-tools \
+    software-properties-common
+```
+
+
+### 2️⃣ Install Docker & Docker Compose 
+```
+sudo apt install -y ca-certificates curl gnupg lsb-release
+sudo mkdir -m 0755 -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) \
+  signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+
+sudo apt update && \
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+### Verify installation
+```
+docker --version
+docker compose version
+```
+
+### 3️⃣ Create Agents Directory & Configure Firewall
+```
+mkdir -p ~/agents
+cd ~/agents
+```
+
+### Allow required ports for agent communication
+```
+sudo ufw allow 22/tcp    
+sudo ufw allow out 8081/tcp
+```
+
+### 4️⃣ Create .env File
+```
+nano .env
+```
+
+### Paste content in .env 
+```
+PROVER_ID=
+PROVER_BROKER_HOST=http://<broker_public_ip>:8081
+BROKER_IP=IPAddressoftheBrokerNode
+AGENT_COUNT=30
+```
+-----
+### Agents `.env` Variables
+
+- **`BROKER_IP`**  
+  The public IP address of your **Broker** (where `prover-node` and `broker` are running).  
+  Agents use this to locate the broker for job requests.
+
+- **`AGENT_COUNT`**  
+  The number of agent processes to run in parallel.  
+  Example: On a 192-core server, 25-30 agents is optimal.
+
+- **`PROVER_ID`**  
+  The public prover address linked to your `PROVER_PUBLISHER_PRIVATE_KEY` on the broker.  
+
+
+- **`PROVER_BROKER_HOST`**  
+  The full connection URL to your broker, including the port.  
+  Example:  http://<BROKER_IP>:8081
+------
+
+
+
+
+
+
 
 
 
