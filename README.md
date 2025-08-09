@@ -230,6 +230,7 @@ services:
       sh -c 'node --no-warnings /usr/src/yarn-project/aztec/dest/bin/index.js start --network alpha-testnet --archiver --prover-node'
 ```
 
+`CTRL` + `X` select `Y` and ENTER
 
 
 
@@ -305,11 +306,14 @@ nano .env
 
 ### Paste content in .env 
 ```
-PROVER_ID=
-PROVER_BROKER_HOST=http://<broker_public_ip>:8081
+PROVER_ID=0xAddress
+PROVER_BROKER_HOST=http://<broker_public_ip>
 BROKER_IP=IPAddressoftheBrokerNode
 AGENT_COUNT=30
 ```
+
+`CTRL` + `X` select `Y` and ENTER
+
 -----
 ### Agents `.env` Variables
 
@@ -331,11 +335,144 @@ AGENT_COUNT=30
 ------
 
 
+### Paste on the docker compose of Agent 
+```
+name: aztec-agent-only
+services:
+  agent:
+    image: aztecprotocol/aztec:latest
+    command:
+      - node
+      - --no-warnings
+      - /usr/src/yarn-project/aztec/dest/bin/index.js
+      - start
+      - --prover-agent
+      - --network
+      - alpha-testnet
+    environment:
+      PROVER_AGENT_COUNT: ${AGENT_COUNT:-30}
+      PROVER_AGENT_POLL_INTERVAL_MS: "10000"
+      PROVER_BROKER_HOST: http://${BROKER_IP}:8081
+      PROVER_ID: ${PROVER_ID}
+    volumes:
+      - ./data-prover:/data-prover
+    entrypoint: >
+      sh -c 'node --no-warnings /usr/src/yarn-project/aztec/dest/bin/index.js start --network alpha-testnet --prover-agent'
+```
+
+`CTRL` + `X` select `Y` and ENTER
 
 
 
+## ▶️ Run & Manage
+
+### Then, run the Prover + Broker (the first one) 
+```
+docker compose up -d
+```
+
+### Now go to the Agent NODE and also run that too 
+```
+docker compose up -d
+```
+
+### Stop and remove containers (with volumes)
+```
+docker compose down -v
+```
+
+### Restart 
+```
+docker compose down -v && docker compose up -d
+```
+
+------
+## Useful Commands for Prover+Broker
+
+### Monitor the Prover logs 
+```
+docker logs -f aztec-prover-prover-node-1
+```
 
 
+### Check submitted proofs
+```
+docker logs -f aztec-prover-prover-node-1 2>&1 | grep --line-buffered -E 'Submitted'
+```
 
+<img width="4020" height="1084" alt="image" src="https://github.com/user-attachments/assets/66eea99c-fd2a-4564-8afe-64d44b012ae6" />
+
+-------
+
+## Useful Command for Agents 
+
+### See container status
+```
+docker ps
+```
+<img width="4072" height="324" alt="image" src="https://github.com/user-attachments/assets/20401bbd-6247-4c49-ab03-7621ac1ea624" />
+
+
+### Optional: Stop and remove containers (with volumes)
+```
+docker compose down -v
+```
+
+### Restart 
+```
+docker compose down -v && docker compose up -d
+```
+
+### Monitor Agent logs 
+```
+docker logs -f aztec-agent-only-agent-1
+```
+
+### Check agent-broker connection & job processing 
+```
+docker logs -f aztec-agent-only-agent-1 2>&1 | grep --line-buffered -E 'Connected to broker|Received job|Starting job|Submitting result'
+```
+
+<img width="4020" height="1076" alt="image" src="https://github.com/user-attachments/assets/277b3d54-2818-4628-94f5-1cfcf06e517c" />
+
+
+# Check Address on Sepolia Scan  -  https://sepolia.etherscan.io/
+
+In the **Transactions** tab, look for:
+- **Method**: `0xc38f2a6d` (Aztec proof submission method)
+- **Value**: `0 ETH`
+- **Txn Fee**: ~0.0000034 ETH
+- Regular intervals (proofs being submitted)
+<img width="4020" height="1236" alt="image" src="https://github.com/user-attachments/assets/20519836-88bd-420c-82d1-70f1049075b8" />
+
+-------
+
+## 🛠 Extra Tooling for Monitoring
+It’s recommended to install some additional tools for monitoring your prover and agent servers.
+
+---
+
+### Install `bpytop` (system resource monitor)
+```
+sudo apt update
+sudo apt install -y python3-pip
+sudo pip3 install bpytop
+```
+### RUN
+```
+bpytop
+```
+<img width="4020" height="1824" alt="image" src="https://github.com/user-attachments/assets/c494d1bd-5f70-494c-b2f6-379e6a38ec8a" />
+
+**What it shows:**
+- [ ] CPU usage per core
+- [ ] RAM usage
+- [ ] Network activity
+- [ ] Active processes
+
+**This is useful for checking:**
+- [ ] If your `AGENT_COUNT` is fully utilizing CPU
+- [ ] If memory usage is approaching limits
+- [ ] If network traffic matches expected proof job transfers
 
 
