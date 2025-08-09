@@ -42,7 +42,7 @@ This guide provides a step-by-step, production-grade walkthrough for deploying a
 
 ---
 ### ⚙️ Agent Node
-- [ ] **CPU:** EPYC 9354 (32 Cores / 3.25 GHz)  
+- [ ] **CPU:** EPYC 9354 (128 Cores - 200+ / 3.25 GHz)  
 - [ ] **RAM:** 256GB+  
 - [ ] **Storage:** 2×2 TB NVMe SSD  
 - [ ] **Price Range:** €600–€800/month  
