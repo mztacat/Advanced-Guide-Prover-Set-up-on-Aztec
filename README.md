@@ -38,13 +38,47 @@ This guide provides a step-by-step, production-grade walkthrough for deploying a
 
 
 
+## 🖥 Recommended Hostkey Server Specs
+
+---
+### ⚙️ Agent Node
+- [ ] **CPU:** EPYC 9354 (32 Cores / 3.25 GHz)  
+- [ ] **RAM:** 256GB+  
+- [ ] **Storage:** 2×2 TB NVMe SSD  
+- [ ] **Price Range:** €600–€800/month  
+
+**Why we chose this:**  
+- Designed for **heavy parallel proving** with high per-core speed  
+- 256+ GB RAM supports **25–30 prover agents** without memory bottlenecks.  
+- Fast NVMe storage ensures quick read/write for large proof data.  
+<img width="4020" height="2250" alt="image" src="https://github.com/user-attachments/assets/9f83ad6e-c9ef-4cab-8f6f-112a9eaf14ae" />
 
 
+### ⚙️ Prover + Broker
+- [ ] **CPU:** 2×EPYC 7451 (48 Cores / 2.3 GHz)  
+- [ ] **RAM:** 256 GB  
+- [ ] **Storage:** 2×960 GB SSD  
+- [ ] **Price Range:** €160–€250/month  
+
+**Why we chose this:**  
+- Meets the **48–64 core** recommendation for broker + prover-node tasks.  
+- 256 GB RAM is sufficient for coordination, archiving, and proof publishing.  
+- SSD storage is reliable for broker data and state storage.  
+- Affordable option compared to higher-tier EPYC plans, keeping costs low while meeting performance needs.
+
+<img width="3076" height="2556" alt="image" src="https://github.com/user-attachments/assets/32889a7c-0de9-4ebe-8fa7-3f6a5289bd4a" />
+
+### 💰 Total Monthly Cost for me (if you're able to get the 750 Epoch in a month, then you claim ROLE), with my setup, I get ~40 epoch/day
+- **Agent Node:** €800/month  
+- **Prover + Broker:** €260/month  
+- **Total:** **€1,060/month**
+
+**General Range for Others:** €760–€1,050/month depending on chosen hardware.
 
 
-
-
-
+> **Note:**  
+> I use **Hostkey** because they’re reliable and offer instant-deploy EPYC servers at competitive rates.  
+> You can also consider **Hetzner**, **OVH**, or **Leaseweb** as long as they meet the CPU, RAM, storage, and network requirements above.
 
 ------
 ## Getting Started 
