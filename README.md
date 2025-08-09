@@ -535,3 +535,11 @@ bpytop
 - [ ] If network traffic matches expected proof job transfers
 
 
+----
+##  More Info & Resources
+
+- **Aztec Discord:** [https://discord.gg/dz4NS6pbJW](https://discord.gg/dz4NS6pbJW)  
+- **Sepolia Etherscan:** [https://sepolia.etherscan.io/](https://sepolia.etherscan.io/)  
+- **Rabby Wallet:** [https://rabby.io/](https://rabby.io/)  
+- **My Twitter:** [https://twitter.com/mztacat](https://twitter.com/mztacat)  
+- **My Discord:** `mztacat_`
