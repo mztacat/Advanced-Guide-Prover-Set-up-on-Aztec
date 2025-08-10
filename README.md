@@ -37,6 +37,39 @@ This guide provides a step-by-step, production-grade walkthrough for deploying a
 - [ ] Generate a **Prover Publisher Private Key** and corresponding **Prover ID** (EVM address from private key)
 
 
+## 2. RPC Options for Sepolia (Execution + Consensus)
+Your Prover + Broker needs access to **Sepolia** and **Consensus Layer** RPCs.  
+You have **two main options**:
+
+---
+### **Option 1: Run Your Own Geth + Consensus (Recommended for Performance)**
+For maximum reliability, low latency, and no rate limits, self-host both (my current setup)
+
+I recommend Jaytechent **[Beacon Geth Full Node Setup](https://github.com/Jaytechent/Beacon-Geth-Full-Node)** a Docker-based setup for:
+- **Geth** and **Beacon Chain**
+
+Once synced, update your Broker `.env`:
+```
+ETHEREUM_HOSTS=http://<your_server_ip>:8545
+L1_CONSENSUS_HOST_URLS=http://<your_server_ip>:3500
+```
+
+### Option 2: Use Third-Party RPC Providers
+If you don’t want to run your own Sepolia  and Consensus nodes, you can connect your Prover + Broker to a trusted third-party RPC provider.
+Popular choices include:
+- [BlockPi](https://blockpi.io/) — free tier + paid plans
+- [QuickNode](https://www.quicknode.com/) — high performance, paid
+- [Infura](https://infura.io/) — widely used, paid/free hybrid
+- [Alchemy](https://www.alchemy.com/) — developer-friendly, free tier + paid
+- [Chainstack](https://chainstack.com/) — good global coverage
+
+Example `.env` configuration for **Broker**:
+```
+ETHEREUM_HOSTS=https://sepolia.blockpi.network/v1/rpc/<your_api_key>
+L1_CONSENSUS_HOST_URLS=https://sepolia-beacon.blockpi.network/api/<your_api_key>
+```
+
+---
 
 ## 🖥 Recommended Hostkey Server Specs
 
