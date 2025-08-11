@@ -123,16 +123,6 @@ To qualify for the **Prover Role**, you must:
 
 📌 More details are available in the <#1402357382541086821> channel on Discord.
 
-### 📜 How to Generate the Transaction Hash
-
-1. Use your **Prover wallet** (the one running on your broker) on the **Sepolia network**.
-2. Send **0 ETH** **to yourself** (same address as sender and recipient).
-3. In the transaction’s **message/memo** (data field), include YourDiscordUsername + WalletAddress
-e.g `mztacat_ 0xAddress 
-4. You can do this easily in [Rabby Wallet](https://rabby.io/) by enabling the **"Add Data"** option.
-5. Once the transaction is confirmed, copy the **Transaction Hash** from [Sepolia Etherscan](https://sepolia.etherscan.io/).
-6. Send that hash to the mod along with your wallet address and Discord username.
-
 ---
 > **Tip:** Make sure your prover is actively running and has completed **at least 750 epochs** before requesting the role
 
