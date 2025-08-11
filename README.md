@@ -120,6 +120,7 @@ To qualify for the **Prover Role**, you must:
 
 - [ ] **Run a Prover node** that has successfully submitted **750+ epochs**.
 - [ ] **Fill out the Prover Inquiry form** here: [https://tally.so/r/mON8zp](https://tally.so/r/mON8zp)
+
 📌 More details are available in the <#1402357382541086821> channel on Discord.
 
 ### 📜 How to Generate the Transaction Hash
